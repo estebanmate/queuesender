@@ -24,6 +24,12 @@ import org.apache.http.util.EntityUtils;
 
 public class SmsSender extends TimerTask {
     public static final Integer CONST_SMS_MAX_LENGTH = 160;//Sin caracteres extendidos
+    public static final String CONST_URL_SMS = "http://www.altiria.net/api/http";
+    public static final String CONST_COMMAND_SMS = "sendsms";
+    public static final String CONST_DOMAIN_ID_SMS = "inno";
+    public static final String CONST_LOGIN_SMS = "IFORMALIA";
+    public static final String CONST_PASSWORD_SMS = "IFORMALIA";
+    public static final String CONST_SENDER_ID_SMS = "IFORMALIA";    
     
     private Integer contador;
     private String smsResponse;    
@@ -36,11 +42,15 @@ public class SmsSender extends TimerTask {
     @Override
     public void run() {
         String phoneNumberOK="653 296 136";
-        String phoneNumberKO="653 296 136";
+        String phoneNumberKO="999 999 999";
         
         //TODO: Consultamos la lista de la BBDD y vamos enviando uno a uno
         String message="Enviado SMS número "+contador+++" a las ("+Date.from(Instant.now())+")...";
-        smsResponse=enviarSMSAltiria(phoneNumberOK, message);
+        if (contador%2==0) {
+           smsResponse=enviarSMSAltiria(phoneNumberOK, message);
+        } else {
+           smsResponse=enviarSMSAltiria(phoneNumberKO, message);
+        }
         //TODO: Controlar la respuesta y marcar los errores para reenvío
         System.out.println("Mensaje enviado: ["+message+"] --> ["+smsResponse+"]");
 
@@ -64,19 +74,19 @@ public class SmsSender extends TimerTask {
         CloseableHttpClient httpClient = builder.build();
 
         //Se fija la URL sobre la que enviar la petición POST
-        HttpPost post = new HttpPost("http://www.altiria.net/api/http");
+        HttpPost post = new HttpPost(CONST_URL_SMS);
 
         //Se crea la lista de parámetros a enviar en la petición POST
         List parametersList = new ArrayList();
         
-        parametersList.add(new BasicNameValuePair("cmd", "sendsms"));
-        parametersList.add(new BasicNameValuePair("domainId", "inno"));
-        parametersList.add(new BasicNameValuePair("login", "IFORMALIA"));
-        parametersList.add(new BasicNameValuePair("passwd", "IFORMALIA"));
+        parametersList.add(new BasicNameValuePair("cmd", CONST_COMMAND_SMS));
+        parametersList.add(new BasicNameValuePair("domainId", CONST_DOMAIN_ID_SMS));
+        parametersList.add(new BasicNameValuePair("login", CONST_LOGIN_SMS));
+        parametersList.add(new BasicNameValuePair("passwd", CONST_PASSWORD_SMS));
         parametersList.add(new BasicNameValuePair("dest", smsNumber));
         // Enviamos sólo los 160 caracteres que tiene de máximo el API. SI no devolvería un Error 013
         parametersList.add(new BasicNameValuePair("msg", (message.length()>160)?message.substring(0,CONST_SMS_MAX_LENGTH):message));
-        parametersList.add(new BasicNameValuePair("senderId", "IFORMALIA"));
+        parametersList.add(new BasicNameValuePair("senderId", CONST_SENDER_ID_SMS));
 
         try {
             //Se fija la codificacion de caracteres de la peticion POST
